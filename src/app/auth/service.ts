@@ -8,6 +8,7 @@ import { AuthUser } from '../../types';
 import { UpdateProfileValidator } from '../../lib/validator/profile';
 import { google } from 'googleapis';
 import { oauth2Client } from '../../utils/googleApi';
+import axios from 'axios';
 
 const SignUp = async (req: Request) => {
   const { password, email, name } = SignUpValidator.parse(req.body);
@@ -20,7 +21,17 @@ const SignUp = async (req: Request) => {
       signUpMethod: 'Email',
     },
   });
-  return user;
+
+  const formattedUser = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    isVerified: user.isVerified,
+    signUpMethod: user.signUpMethod,
+  };
+
+  const token = createJWT(formattedUser);
+  return { token: token, user: formattedUser };
 };
 
 const SignIn = async (req: Request) => {
@@ -103,6 +114,47 @@ const updateProfile = async (req: Request, authUser: AuthUser) => {
   return updatedUser;
 };
 
+const processUserOAuth2 = async (userData: { name: string; email: string; signUpMethod: string }) => {
+  let user = await db.user.findUnique({
+    where: {
+      email: userData.email,
+    },
+  });
+
+  if (!user) {
+    user = await db.user.create({
+      data: {
+        name: userData.name,
+        email: userData.email,
+        signUpMethod: userData.signUpMethod,
+        isVerified: true,
+        logInCount: 1,
+        lastActive: new Date(),
+      },
+    });
+  } else {
+    await db.user.update({
+      where: {
+        email: userData.email,
+      },
+      data: {
+        logInCount: user.logInCount + 1,
+        lastActive: new Date(),
+      },
+    });
+  }
+
+  const payload = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    isVerified: user.isVerified,
+    signUpMethod: user.signUpMethod,
+  };
+
+  return payload;
+};
+
 const googleAuthCallback = async (req: Request) => {
   const { code } = req.query;
 
@@ -127,36 +179,24 @@ const googleAuthCallback = async (req: Request) => {
     },
   });
 
-  if (!user) {
-    user = await db.user.create({
-      data: {
-        name: data.name,
-        email: data.email,
-        signUpMethod: 'Google',
-        isVerified: true,
-        logInCount: 1,
-        lastActive: new Date(),
-      },
-    });
-  }
-  await db.user.update({
-    where: {
-      email: data.email,
-    },
-    data: {
-      logInCount: user.logInCount + 1,
-      lastActive: new Date(),
-    },
-  });
+  const payload = await processUserOAuth2({ name: data.name, email: data.email, signUpMethod: 'Google' });
 
-  const payload = {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    isVerified: user.isVerified,
-    signUpMethod: user.signUpMethod,
-  };
+  const token = createJWT(payload);
+  return { token: token, user: payload };
+};
 
+const facebookAuthCallback = async (req: Request) => {
+  const { code } = req.query;
+  const tokenUrl = `https://graph.facebook.com/v13.0/oauth/access_token?client_id=${process.env.FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(`${process.env.BASE_URL}auth/facebook/callback`)}&client_secret=${
+    process.env.FACEBOOK_APP_SECRET
+  }&code=${code}`;
+
+  const response = await axios.get(tokenUrl);
+  const accessToken = response.data.access_token;
+
+  const { data } = await axios.get(`https://graph.facebook.com/me?fields=id,name,email&access_token=${accessToken}`);
+
+  const payload = await processUserOAuth2({ name: data.name, email: data.email, signUpMethod: 'Facebook' });
   const token = createJWT(payload);
   return { token: token, user: payload };
 };
@@ -167,6 +207,7 @@ const AuthService = {
   resetPassword,
   updateProfile,
   googleAuthCallback,
+  facebookAuthCallback,
 };
 
 export default AuthService;

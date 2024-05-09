@@ -1,10 +1,10 @@
+import axios from 'axios';
 import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import AuthService from './service';
 import authenticateUser from '../../middlewares/auth';
 import { AuthUser } from '../../types';
-import { google } from 'googleapis';
 import { oauth2Client } from '../../utils/googleApi';
+import AuthService from './service';
 
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -75,6 +75,27 @@ export const googleAuth = async (req: Request, res: Response, next: NextFunction
 export const googleAuthCallback = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const result = await AuthService.googleAuthCallback(req);
+    res.status(StatusCodes.OK).json({
+      message: 'SignIn Success!',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const facebookAuth = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const authUrl = `https://www.facebook.com/v13.0/dialog/oauth?client_id=${process.env.FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(`${process.env.BASE_URL}auth/facebook/callback`)}&scope=email`;
+    res.redirect(authUrl);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const facebookAuthCallback = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const result = await AuthService.facebookAuthCallback(req);
     res.status(StatusCodes.OK).json({
       message: 'SignIn Success!',
       data: result,
