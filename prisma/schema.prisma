@@ -17,7 +17,7 @@ model User {
   id         Int      @id @default(autoincrement()) // Auto-incrementing ID
   name       String   // User's name
   email      String   @unique // User's email, which is unique
-  password   String   // Hashed password
+  password   String?   // Hashed password
   signUpMethod String?   
   isVerified Boolean  @default(false)
   signUpAt   DateTime @default(now()) // Timestamp of sign-up, default to current timestamp
