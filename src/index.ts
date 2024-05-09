@@ -3,7 +3,9 @@ import * as dotenv from 'dotenv';
 import express from 'express';
 import AuthRouter from './app/auth/router';
 import UserRouter from './app/user/router';
-import errorHandler from './middleware/handle-error';
+import errorHandler from './middlewares/errorHandler';
+import { verify } from 'jsonwebtoken';
+import { isTokenValid } from './utils/jwt';
 
 dotenv.config();
 const app = express();
@@ -14,7 +16,7 @@ app.use(express.json());
 
 app.get('/', (req, res) => {
   res.status(200).json({
-    message: 'welcome to INCIT api' + process.env.NODE_ENV,
+    message: 'welcome to INCIT api',
   });
 });
 

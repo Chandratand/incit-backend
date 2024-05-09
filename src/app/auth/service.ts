@@ -30,6 +30,7 @@ const SignIn = async (req: Request) => {
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) throw new UnauthorizedError('Invalid Credentials');
   const formattedUser = {
+    id: user.id,
     name: user.name,
     email: user.email,
     isVerified: user.isVerified,
