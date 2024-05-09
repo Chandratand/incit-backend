@@ -32,7 +32,8 @@ const authenticateUser = (req: Request, res: Response, next: NextFunction) => {
 
     // next();
   } catch (error) {
-    next(error);
+    // next(error);
+    throw error;
   }
 };
 
