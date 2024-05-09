@@ -4,6 +4,7 @@ interface TokenBody extends JwtPayload {
   name: string;
   email: string;
   isVerified: boolean;
+  signUpMethod?: string | null;
 }
 
 export const createJWT = (payload: TokenBody): string => {

@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { UnauthenticatedError } from '../lib/errors';
 import { isTokenValid } from '../utils/jwt';
 
-const authenticateUser = async (req: Request, res: Response, next: NextFunction) => {
+const authenticateUser = (req: Request, res: Response, next: NextFunction) => {
   try {
     let token;
     // check header
@@ -23,13 +23,14 @@ const authenticateUser = async (req: Request, res: Response, next: NextFunction)
     }
 
     // Attach the user and his permissions to the req object
-    req.user = {
-      email: payload.email,
-      name: payload.name,
-      isVerified: payload.isVerified,
-    };
+    // req.user = {
+    //   email: payload.email,
+    //   name: payload.name,
+    //   isVerified: payload.isVerified,
+    // };
+    return payload;
 
-    next();
+    // next();
   } catch (error) {
     next(error);
   }

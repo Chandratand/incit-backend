@@ -4,8 +4,6 @@ import express from 'express';
 import AuthRouter from './app/auth/router';
 import UserRouter from './app/user/router';
 import errorHandler from './middlewares/errorHandler';
-import { verify } from 'jsonwebtoken';
-import { isTokenValid } from './utils/jwt';
 
 dotenv.config();
 const app = express();

@@ -18,6 +18,7 @@ model User {
   name       String   // User's name
   email      String   @unique // User's email, which is unique
   password   String   // Hashed password
+  signUpMethod String?   
   isVerified Boolean  @default(false)
   signUpAt   DateTime @default(now()) // Timestamp of sign-up, default to current timestamp
   logInCount Int      @default(0) // Number of times the user has logged in, defaults to 0
