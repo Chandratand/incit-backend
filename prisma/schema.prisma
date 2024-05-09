@@ -1,0 +1,26 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int      @id @default(autoincrement()) // Auto-incrementing ID
+  name       String   // User's name
+  email      String   @unique // User's email, which is unique
+  password   String   // Hashed password
+  isVerified Boolean  @default(false)
+  signUpAt   DateTime @default(now()) // Timestamp of sign-up, default to current timestamp
+  logInCount Int      @default(0) // Number of times the user has logged in, defaults to 0
+  logOutAt   DateTime? // The last time user logged out, optional field
+  lastActive DateTime? // The last time user was active, optional field
+}
