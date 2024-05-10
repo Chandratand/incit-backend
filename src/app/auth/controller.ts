@@ -2,8 +2,9 @@ import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import authenticateUser from '../../middlewares/auth';
 import { AuthUser } from '../../types';
-import { oauth2Client } from '../../utils/googleApi';
 import AuthService from './service';
+import { google } from 'googleapis';
+import { oauth2Client } from '../../utils/googleApi';
 
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -81,16 +82,15 @@ export const resendEmailVerification = async (req: Request, res: Response, next:
   }
 };
 
-const scopes = ['https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile'];
-
-const authorizationUrl = oauth2Client.generateAuthUrl({
-  access_type: 'offline',
-  scope: scopes,
-  include_granted_scopes: true,
-});
-
 export const googleAuth = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const scopes = ['https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile'];
+
+    const authorizationUrl = oauth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: scopes,
+      include_granted_scopes: true,
+    });
     res.redirect(authorizationUrl);
   } catch (error) {
     next(error);
@@ -111,7 +111,7 @@ export const googleAuthCallback = async (req: Request, res: Response, next: Next
 
 export const facebookAuth = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authUrl = `https://www.facebook.com/v13.0/dialog/oauth?client_id=${process.env.FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(`${process.env.BASE_URL}auth/facebook/callback`)}&scope=email`;
+    const authUrl = `https://www.facebook.com/v13.0/dialog/oauth?client_id=${process.env.FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(`${process.env.FE_URL}auth/facebook`)}&scope=email`;
     res.redirect(authUrl);
   } catch (error) {
     next(error);

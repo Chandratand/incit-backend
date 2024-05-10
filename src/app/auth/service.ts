@@ -189,7 +189,7 @@ const googleAuthCallback = async (req: Request) => {
 
 const facebookAuthCallback = async (req: Request) => {
   const { code } = req.query;
-  const tokenUrl = `https://graph.facebook.com/v13.0/oauth/access_token?client_id=${process.env.FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(`${process.env.BASE_URL}auth/facebook/callback`)}&client_secret=${
+  const tokenUrl = `https://graph.facebook.com/v13.0/oauth/access_token?client_id=${process.env.FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(`${process.env.FE_URL}auth/facebook`)}&client_secret=${
     process.env.FACEBOOK_APP_SECRET
   }&code=${code}`;
 
