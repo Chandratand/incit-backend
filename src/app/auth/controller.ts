@@ -3,8 +3,6 @@ import { StatusCodes } from 'http-status-codes';
 import authenticateUser from '../../middlewares/auth';
 import { AuthUser } from '../../types';
 import AuthService from './service';
-import { google } from 'googleapis';
-import { oauth2Client } from '../../utils/googleApi';
 
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -82,24 +80,9 @@ export const resendEmailVerification = async (req: Request, res: Response, next:
   }
 };
 
-export const googleAuth = async (req: Request, res: Response, next: NextFunction) => {
+export const googleVerifyToken = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const scopes = ['https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile'];
-
-    const authorizationUrl = oauth2Client.generateAuthUrl({
-      access_type: 'offline',
-      scope: scopes,
-      include_granted_scopes: true,
-    });
-    res.redirect(authorizationUrl);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const googleAuthCallback = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const result = await AuthService.googleAuthCallback(req);
+    const result = await AuthService.googleVefrifyId(req);
     res.status(StatusCodes.OK).json({
       message: 'SignIn Success!',
       data: result,
@@ -109,18 +92,9 @@ export const googleAuthCallback = async (req: Request, res: Response, next: Next
   }
 };
 
-export const facebookAuth = async (req: Request, res: Response, next: NextFunction) => {
+export const facebookVerifyToken = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authUrl = `https://www.facebook.com/v13.0/dialog/oauth?client_id=${process.env.FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(`${process.env.FE_URL}auth/facebook`)}&scope=email`;
-    res.redirect(authUrl);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const facebookAuthCallback = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const result = await AuthService.facebookAuthCallback(req);
+    const result = await AuthService.facebookVefrifyId(req);
     res.status(StatusCodes.OK).json({
       message: 'SignIn Success!',
       data: result,

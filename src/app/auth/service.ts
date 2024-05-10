@@ -1,7 +1,6 @@
 import axios from 'axios';
 import bcrypt from 'bcrypt';
 import { Request } from 'express';
-import { google } from 'googleapis';
 import { db } from '../../db';
 import { BadRequestError, InternalServerError, UnauthenticatedError, UnauthorizedError } from '../../lib/errors';
 import { ResetPasswordValidator, SignInValidator, SignUpValidator } from '../../lib/validator/auth';
@@ -157,50 +156,38 @@ const processUserOAuth2 = async (userData: { name: string; email: string; signUp
   return payload;
 };
 
-const googleAuthCallback = async (req: Request) => {
-  const { code } = req.query;
+const googleVefrifyId = async (req: Request) => {
+  const { idToken } = req.body;
 
-  const { tokens } = await oauth2Client.getToken(code as string);
+  if (!idToken) throw new BadRequestError('Bad Request Error');
 
-  oauth2Client.setCredentials(tokens);
-
-  const oauth2 = google.oauth2({
-    auth: oauth2Client,
-    version: 'v2',
+  const ticket = await oauth2Client.verifyIdToken({
+    idToken: idToken,
+    audience: process.env.GOOGLE_CLIENT_ID,
   });
 
-  const { data } = await oauth2.userinfo.get();
-
-  if (!data.email || !data.name) {
-    throw new UnauthenticatedError('Unauthenticated');
-  }
-
-  let user = await db.user.findUnique({
-    where: {
-      email: data.email,
-    },
-  });
-
+  const data = ticket.getPayload();
+  if (!data?.name || !data?.email) throw new BadRequestError('Bad Request Error');
   const payload = await processUserOAuth2({ name: data.name, email: data.email, signUpMethod: 'Google' });
-
   const token = createJWT(payload);
-  return { token: token, user: payload };
+  return {
+    token: token,
+    user: payload,
+  };
 };
 
-const facebookAuthCallback = async (req: Request) => {
-  const { code } = req.query;
-  const tokenUrl = `https://graph.facebook.com/v13.0/oauth/access_token?client_id=${process.env.FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(`${process.env.FE_URL}auth/facebook`)}&client_secret=${
-    process.env.FACEBOOK_APP_SECRET
-  }&code=${code}`;
+const facebookVefrifyId = async (req: Request) => {
+  const { idToken } = req.body;
+  const res = await axios.get(`https://graph.facebook.com/v13.0/me?fields=id,name,email,picture&access_token=${idToken}`);
 
-  const response = await axios.get(tokenUrl);
-  const accessToken = response.data.access_token;
+  if (!res.data?.name || !res.data?.email) throw new BadRequestError('Bad Request Error');
 
-  const { data } = await axios.get(`https://graph.facebook.com/me?fields=id,name,email&access_token=${accessToken}`);
-
-  const payload = await processUserOAuth2({ name: data.name, email: data.email, signUpMethod: 'Facebook' });
+  const payload = await processUserOAuth2({ name: res.data.name, email: res.data.email, signUpMethod: 'Google' });
   const token = createJWT(payload);
-  return { token: token, user: payload };
+  return {
+    token: token,
+    user: payload,
+  };
 };
 
 const checkVerifiedEmail = async (req: Request, authUser: AuthUser) => {
@@ -235,10 +222,10 @@ const AuthService = {
   SignIn,
   resetPassword,
   updateProfile,
-  googleAuthCallback,
-  facebookAuthCallback,
   checkVerifiedEmail,
   resendEmailVerification,
+  googleVefrifyId,
+  facebookVefrifyId,
 };
 
 export default AuthService;
