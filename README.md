@@ -4,6 +4,8 @@
 
 INCIT Backend is a simple API designed to manage user interactions for the INCIT application. It supports operations such as user authentication, profile management, and statistics gathering.
 
+Demo URL : https://incit-be-omega.vercel.app/
+
 ## Instalation
 
 To set up the INCIT Backend locally, follow these steps:
