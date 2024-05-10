@@ -38,6 +38,26 @@ To set up the INCIT Backend locally, follow these steps:
      npx prisma migrate dev
    ```
 
+## Environment Variables
+
+To run this project, you will need to add the following environment variables to your `.env` file. You can start by copying the provided `.env.example` file to a new file named `.env`, then filling in the necessary values.
+
+- `DATABASE_URL`: The connection string for your database. This should include the username, password, hostname, port, and database name.
+- `PORT`: The port number on which the server will run. Default is usually `3000` or `8080`.
+- `JWT_SECRET`: The secret key used to sign and verify JSON Web Tokens. This should be a random and secure string.
+- `JWT_EMAIL_SECRET`: The secret key used specifically for JSON Web Tokens used in email-related processes, such as email verification. This should also be a random and secure string.
+- `GOOGLE_CLIENT_ID`: The client ID from your Google API credentials, used for Google OAuth.
+- `GOOGLE_CLIENT_SECRET`: The client secret from your Google API credentials, used for Google OAuth.
+- `FACEBOOK_APP_ID`: The application ID from your Facebook app, used for Facebook integration.
+- `FACEBOOK_APP_SECRET`: The application secret from your Facebook app, used for Facebook integration.
+- `FE_URL`: The base URL of your front end. This is used in various parts of the application to generate links back to the client.
+- `GMAIL`: The Gmail address used for sending emails from the application.
+- `SENDMAIL_PASSWORD`: The password for the email account from which the application sends emails.
+
+### Note:
+
+Ensure not to share your `.env` files or include them in your version-controlled source code as they can contain sensitive information. Instead, use the `.env.example` as a template which can be safely added to the repository.
+
 ## Usage
 
 To start the server, use one of the following commands:
