@@ -46,13 +46,15 @@ const stats = async () => {
       isVerified: true,
       lastActive: {
         gte: sevenDaysAgo,
-        lte: today,
+        lte: new Date(),
       },
     },
   });
 
   // Execute all promises concurrently
   const [totalUsers, activeSessionsToday, activeSessionsPastWeek] = await Promise.all([totalUsersPromise, activeSessionsTodayPromise, activeSessionsPastWeekPromise]);
+
+  console.log('activeSessionsPastWeek', activeSessionsPastWeek);
 
   const averageActiveUsersLast7Days = Math.round((activeSessionsPastWeek / 7) * 100) / 100;
 
