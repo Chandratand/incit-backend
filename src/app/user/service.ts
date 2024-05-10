@@ -1,4 +1,7 @@
 import { db } from '../../db';
+import { Request } from 'express';
+import { isEmailTokenValid } from '../../utils/jwt';
+import { BadRequestError } from '../../lib/errors';
 
 const get = async () => {
   const users = await db.user.findMany({
@@ -67,9 +70,27 @@ const stats = async () => {
   };
 };
 
+const verifyEmail = async (req: Request) => {
+  const token = req.query.token as string;
+  if (!token) throw new BadRequestError('Invalid TOken');
+  const checkToken = isEmailTokenValid(token);
+  if (!checkToken) throw new BadRequestError('Verification Fail');
+  await db.user.update({
+    where: {
+      email: checkToken.email,
+    },
+    data: {
+      isVerified: true,
+    },
+  });
+
+  return true;
+};
+
 const UserService = {
   get,
   stats,
+  verifyEmail,
 };
 
 export default UserService;

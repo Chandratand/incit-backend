@@ -28,3 +28,15 @@ export const getUserStats = async (req: Request, res: Response, next: NextFuncti
     next(error);
   }
 };
+
+export const veriyEmail = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const result = await UserService.verifyEmail(req);
+    res.status(StatusCodes.OK).json({
+      message: 'Email verification success.',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

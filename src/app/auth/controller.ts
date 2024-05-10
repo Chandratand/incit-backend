@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import authenticateUser from '../../middlewares/auth';
@@ -49,6 +48,32 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
     const result = await AuthService.updateProfile(req, authUser);
     res.status(StatusCodes.OK).json({
       message: 'Successfully update profile!',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const checkVerificationStatus = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const authUser = authenticateUser(req, res, next, true) as AuthUser;
+    const result = await AuthService.checkVerifiedEmail(req, authUser);
+    res.status(StatusCodes.OK).json({
+      message: result ? 'Email is verified' : 'Email is not verified',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resendEmailVerification = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const authUser = authenticateUser(req, res, next, true) as AuthUser;
+    const result = await AuthService.resendEmailVerification(req, authUser);
+    res.status(StatusCodes.OK).json({
+      message: 'Resend Email Success',
       data: result,
     });
   } catch (error) {

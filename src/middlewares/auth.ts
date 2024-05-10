@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { UnauthenticatedError } from '../lib/errors';
 import { isTokenValid } from '../utils/jwt';
 
-const authenticateUser = (req: Request, res: Response, next: NextFunction) => {
+const authenticateUser = (req: Request, res: Response, next: NextFunction, skipVerifed?: boolean) => {
   try {
     let token;
     // check header
@@ -18,7 +18,7 @@ const authenticateUser = (req: Request, res: Response, next: NextFunction) => {
 
     const payload = isTokenValid(token);
 
-    if (!payload.isVerified) {
+    if (!payload.isVerified && !skipVerifed) {
       throw new UnauthenticatedError('Unauthenticated');
     }
 

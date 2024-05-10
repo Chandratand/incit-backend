@@ -1,14 +1,15 @@
+import axios from 'axios';
 import bcrypt from 'bcrypt';
 import { Request } from 'express';
-import { db } from '../../db';
-import { UnauthenticatedError, UnauthorizedError } from '../../lib/errors';
-import { ResetPasswordValidator, SignInValidator, SignUpValidator } from '../../lib/validator/auth';
-import { createJWT } from '../../utils/jwt';
-import { AuthUser } from '../../types';
-import { UpdateProfileValidator } from '../../lib/validator/profile';
 import { google } from 'googleapis';
+import { db } from '../../db';
+import { BadRequestError, InternalServerError, UnauthenticatedError, UnauthorizedError } from '../../lib/errors';
+import { ResetPasswordValidator, SignInValidator, SignUpValidator } from '../../lib/validator/auth';
+import { UpdateProfileValidator } from '../../lib/validator/profile';
+import { AuthUser } from '../../types';
 import { oauth2Client } from '../../utils/googleApi';
-import axios from 'axios';
+import { createJWT } from '../../utils/jwt';
+import EmailSercive from '../email/service';
 
 const SignUp = async (req: Request) => {
   const { password, email, name } = SignUpValidator.parse(req.body);
@@ -30,6 +31,7 @@ const SignUp = async (req: Request) => {
     signUpMethod: user.signUpMethod,
   };
 
+  await EmailSercive.sendEmailVerification(user.email);
   const token = createJWT(formattedUser);
   return { token: token, user: formattedUser };
 };
@@ -201,6 +203,33 @@ const facebookAuthCallback = async (req: Request) => {
   return { token: token, user: payload };
 };
 
+const checkVerifiedEmail = async (req: Request, authUser: AuthUser) => {
+  const { email } = authUser;
+  const user = await db.user.findUnique({
+    where: {
+      email: email,
+    },
+  });
+  if (!user) throw new BadRequestError('Invalid User');
+  const formattedUser = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    isVerified: user.isVerified,
+    signUpMethod: user.signUpMethod,
+  };
+
+  const token = createJWT(formattedUser);
+  return { token: token, user: formattedUser };
+};
+
+const resendEmailVerification = async (req: Request, authUser: AuthUser) => {
+  const { email } = authUser;
+  const res = await EmailSercive.sendEmailVerification(email);
+  if (!res) throw new InternalServerError('Send Email fail!');
+  return !!res;
+};
+
 const AuthService = {
   SignUp,
   SignIn,
@@ -208,6 +237,8 @@ const AuthService = {
   updateProfile,
   googleAuthCallback,
   facebookAuthCallback,
+  checkVerifiedEmail,
+  resendEmailVerification,
 };
 
 export default AuthService;
