@@ -13,13 +13,13 @@ To set up the INCIT Backend locally, follow these steps:
 1. **Clone the repository:**
 
    ```bash
-   git clone [your-repo-url]
+   git clone https://github.com/Chandratand/incit-backend
    ```
 
 2. **Navigate to the project directory:**
 
    ```bash
-     cd INCIT-Backend
+     cd incit-Backend
    ```
 
 3. **Navigate to the project directory:**
