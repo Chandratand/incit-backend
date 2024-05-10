@@ -1,6 +1,6 @@
 import { db } from '../../db';
 import { Request } from 'express';
-import { isEmailTokenValid } from '../../utils/jwt';
+import { createJWT, isEmailTokenValid } from '../../utils/jwt';
 import { BadRequestError } from '../../lib/errors';
 
 const get = async () => {
@@ -71,16 +71,31 @@ const verifyEmail = async (req: Request) => {
   if (!token) throw new BadRequestError('Invalid TOken');
   const checkToken = isEmailTokenValid(token);
   if (!checkToken) throw new BadRequestError('Verification Fail');
-  await db.user.update({
+  const user = await db.user.update({
     where: {
       email: checkToken.email,
     },
     data: {
       isVerified: true,
     },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      isVerified: true,
+      signUpMethod: true,
+    },
   });
 
-  return true;
+  const formattedUser = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    isVerified: user.isVerified,
+    signUpMethod: user.signUpMethod,
+  };
+  const jwtToken = createJWT(formattedUser);
+  return { token: jwtToken, user: formattedUser };
 };
 
 const UserService = {
