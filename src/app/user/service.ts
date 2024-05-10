@@ -4,19 +4,21 @@ import { createJWT, isEmailTokenValid } from '../../utils/jwt';
 import { BadRequestError } from '../../lib/errors';
 
 const get = async () => {
-  const users = await db.user.findMany({
-    where: {
-      isVerified: true,
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      signUpAt: true,
-      logInCount: true,
-      logOutAt: true,
-    },
-  });
+  const users = await db.$queryRaw`
+    SELECT 
+      id, 
+      name, 
+      email, 
+      "signUpAt", 
+      "logInCount", 
+      CASE 
+        WHEN "logOutAt" <= NOW() THEN "logOutAt" 
+        ELSE NULL 
+      END AS "logOutAt"
+    FROM "User"
+    WHERE "isVerified" = true;
+    `;
+
   return users;
 };
 

@@ -54,6 +54,10 @@ const SignIn = async (req: Request) => {
     signUpMethod: user.signUpMethod,
   };
 
+  // set default logout at 24h from now because jwt exp
+  const logOutAt = new Date();
+  logOutAt.setHours(logOutAt.getHours() + 24);
+
   await db.user.update({
     where: {
       email: email,
@@ -61,6 +65,7 @@ const SignIn = async (req: Request) => {
     data: {
       logInCount: user.logInCount + 1,
       lastActive: new Date(),
+      logOutAt: logOutAt,
     },
   });
 
@@ -149,6 +154,10 @@ const processUserOAuth2 = async (userData: { name: string; email: string; signUp
       },
     });
   } else {
+    // set default logout at 24h from now because jwt exp
+    const logOutAt = new Date();
+    logOutAt.setHours(logOutAt.getHours() + 24);
+
     await db.user.update({
       where: {
         email: userData.email,
@@ -156,6 +165,7 @@ const processUserOAuth2 = async (userData: { name: string; email: string; signUp
       data: {
         logInCount: user.logInCount + 1,
         lastActive: new Date(),
+        logOutAt: logOutAt,
       },
     });
   }
