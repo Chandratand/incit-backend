@@ -5,6 +5,9 @@ import { BadRequestError } from '../../lib/errors';
 
 const get = async () => {
   const users = await db.user.findMany({
+    where: {
+      isVerified: true,
+    },
     select: {
       id: true,
       name: true,
@@ -38,8 +41,7 @@ const stats = async () => {
     },
   });
 
-  const activeSessionsPastWeekPromise = db.user.groupBy({
-    by: ['lastActive'],
+  const activeSessionsPastWeekPromise = db.user.count({
     where: {
       isVerified: true,
       lastActive: {
@@ -47,20 +49,12 @@ const stats = async () => {
         lte: today,
       },
     },
-    _count: {
-      lastActive: true,
-    },
   });
 
   // Execute all promises concurrently
   const [totalUsers, activeSessionsToday, activeSessionsPastWeek] = await Promise.all([totalUsersPromise, activeSessionsTodayPromise, activeSessionsPastWeekPromise]);
 
-  // Calculate the average active users over the last 7 days
-  let totalActiveDays = 0;
-  activeSessionsPastWeek.forEach((day) => {
-    totalActiveDays += day._count.lastActive || 0;
-  });
-  const averageActiveUsersLast7Days = totalActiveDays / 7;
+  const averageActiveUsersLast7Days = Math.round((activeSessionsPastWeek / 7) * 100) / 100;
 
   // Return the results
   return {
