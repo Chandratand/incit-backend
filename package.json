@@ -7,8 +7,11 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npx ts-node src/index.ts",
     "dev": "nodemon",
-    "prisma:generate": "prisma generate",
-    "build": "npm run prisma:generate && tsc"
+    "vercel-build": "prisma generate && prisma migrate deploy",
+    "migrate:dev": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "migrate:status": "prisma migrate status",
+    "generate": "prisma generate"
   },
   "author": "Chandra Tandiono",
   "license": "ISC",
