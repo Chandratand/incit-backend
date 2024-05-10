@@ -14,7 +14,7 @@ export const createJWT = (payload: TokenBody): string => {
   }
 
   const token = jwt.sign(payload, jwtSecret, {
-    expiresIn: '1h',
+    expiresIn: '24h',
   });
 
   return token;
