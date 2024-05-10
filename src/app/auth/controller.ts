@@ -28,6 +28,19 @@ export const signIn = async (req: Request, res: Response, next: NextFunction) =>
   }
 };
 
+export const signOut = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const authUser = authenticateUser(req, res, next) as AuthUser;
+    const result = await AuthService.signOut(req, authUser);
+    res.status(StatusCodes.OK).json({
+      message: 'Sign out Success!',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const authUser = authenticateUser(req, res, next) as AuthUser;

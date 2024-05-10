@@ -68,6 +68,21 @@ const SignIn = async (req: Request) => {
   return { token: token, user: formattedUser };
 };
 
+const signOut = async (req: Request, authUser: AuthUser) => {
+  const { email } = authUser;
+
+  await db.user.update({
+    where: {
+      email: email,
+    },
+    data: {
+      logOutAt: new Date(),
+    },
+  });
+
+  return true;
+};
+
 const resetPassword = async (req: Request, authUser: AuthUser) => {
   const { oldPassword, newPassword } = ResetPasswordValidator.parse(req.body);
   const { email } = authUser;
@@ -226,6 +241,7 @@ const AuthService = {
   resendEmailVerification,
   googleVefrifyId,
   facebookVefrifyId,
+  signOut,
 };
 
 export default AuthService;
