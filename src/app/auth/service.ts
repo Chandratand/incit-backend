@@ -5,7 +5,6 @@ import { db } from '../../db';
 import { BadRequestError, InternalServerError, UnauthenticatedError, UnauthorizedError } from '../../lib/errors';
 import { ResetPasswordValidator, SignInValidator, SignUpValidator } from '../../lib/validator/auth';
 import { UpdateProfileValidator } from '../../lib/validator/profile';
-import { AuthUser } from '../../types';
 import { oauth2Client } from '../../utils/googleApi';
 import { createJWT } from '../../utils/jwt';
 import EmailSercive from '../email/service';
@@ -73,8 +72,8 @@ const SignIn = async (req: Request) => {
   return { token: token, user: formattedUser };
 };
 
-const signOut = async (req: Request, authUser: AuthUser) => {
-  const { email } = authUser;
+const signOut = async (req: Request) => {
+  const email = req.user?.email;
 
   await db.user.update({
     where: {
@@ -88,9 +87,9 @@ const signOut = async (req: Request, authUser: AuthUser) => {
   return true;
 };
 
-const resetPassword = async (req: Request, authUser: AuthUser) => {
+const resetPassword = async (req: Request) => {
   const { oldPassword, newPassword } = ResetPasswordValidator.parse(req.body);
-  const { email } = authUser;
+  const email = req.user?.email;
 
   const user = await db.user.findUnique({ where: { email: email } });
   if (!user || !user.password) {
@@ -112,9 +111,9 @@ const resetPassword = async (req: Request, authUser: AuthUser) => {
   return true;
 };
 
-const updateProfile = async (req: Request, authUser: AuthUser) => {
+const updateProfile = async (req: Request) => {
   const { name } = UpdateProfileValidator.parse(req.body);
-  const { email } = authUser;
+  const email = req.user?.email;
 
   const user = await db.user.findUnique({ where: { email: email } });
   if (!user) {
@@ -215,8 +214,8 @@ const facebookVefrifyId = async (req: Request) => {
   };
 };
 
-const checkVerifiedEmail = async (req: Request, authUser: AuthUser) => {
-  const { email } = authUser;
+const checkVerifiedEmail = async (req: Request) => {
+  const email = req.user?.email;
   const user = await db.user.findUnique({
     where: {
       email: email,
@@ -235,8 +234,8 @@ const checkVerifiedEmail = async (req: Request, authUser: AuthUser) => {
   return { token: token, user: formattedUser };
 };
 
-const resendEmailVerification = async (req: Request, authUser: AuthUser) => {
-  const { email } = authUser;
+const resendEmailVerification = async (req: Request) => {
+  const email = req.user?.email as string;
   const res = await EmailSercive.sendEmailVerification(email);
   if (!res) throw new InternalServerError('Send Email fail!');
   return !!res;

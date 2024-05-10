@@ -5,6 +5,19 @@ import AuthRouter from './app/auth/router';
 import UserRouter from './app/user/router';
 import errorHandler from './middlewares/errorHandler';
 
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        id: number;
+        email: string;
+        name: string;
+        isVerified?: boolean;
+      };
+    }
+  }
+}
+
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT;

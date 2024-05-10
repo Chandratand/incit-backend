@@ -70,9 +70,9 @@ const stats = async () => {
 
 const verifyEmail = async (req: Request) => {
   const token = req.query.token as string;
-  if (!token) throw new BadRequestError('Invalid TOken');
+  if (!token) throw new BadRequestError('Invalid Token');
   const checkToken = isEmailTokenValid(token);
-  if (!checkToken) throw new BadRequestError('Verification Fail');
+  if (!checkToken) throw new BadRequestError('Verification Fail!');
   const user = await db.user.update({
     where: {
       email: checkToken.email,

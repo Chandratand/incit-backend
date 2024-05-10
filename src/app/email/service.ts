@@ -13,7 +13,6 @@ const transporter = nodemailer.createTransport({
 
 const sendEmailVerification = async (email: string) => {
   try {
-    email = 'chieveid@gmail.com';
     const token = createEmailVerifToken(email);
     let message = {
       from: process.env.GMAIL,
@@ -29,7 +28,6 @@ const sendEmailVerification = async (email: string) => {
     };
 
     return await transporter.sendMail(message);
-    return true;
   } catch (ex) {
     console.log(ex);
   }

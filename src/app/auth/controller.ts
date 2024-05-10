@@ -1,7 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import authenticateUser from '../../middlewares/auth';
-import { AuthUser } from '../../types';
 import AuthService from './service';
 
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
@@ -30,8 +28,7 @@ export const signIn = async (req: Request, res: Response, next: NextFunction) =>
 
 export const signOut = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authUser = authenticateUser(req, res, next) as AuthUser;
-    const result = await AuthService.signOut(req, authUser);
+    const result = await AuthService.signOut(req);
     res.status(StatusCodes.OK).json({
       message: 'Sign out Success!',
       data: result,
@@ -43,8 +40,7 @@ export const signOut = async (req: Request, res: Response, next: NextFunction) =
 
 export const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authUser = authenticateUser(req, res, next) as AuthUser;
-    const result = await AuthService.resetPassword(req, authUser);
+    const result = await AuthService.resetPassword(req);
     res.status(StatusCodes.OK).json({
       message: 'Password reset successfully!',
       data: result,
@@ -56,8 +52,7 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
 
 export const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authUser = authenticateUser(req, res, next) as AuthUser;
-    const result = await AuthService.updateProfile(req, authUser);
+    const result = await AuthService.updateProfile(req);
     res.status(StatusCodes.OK).json({
       message: 'Successfully update profile!',
       data: result,
@@ -69,8 +64,7 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
 
 export const checkVerificationStatus = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authUser = authenticateUser(req, res, next, true) as AuthUser;
-    const result = await AuthService.checkVerifiedEmail(req, authUser);
+    const result = await AuthService.checkVerifiedEmail(req);
     res.status(StatusCodes.OK).json({
       message: result ? 'Email is verified' : 'Email is not verified',
       data: result,
@@ -82,8 +76,7 @@ export const checkVerificationStatus = async (req: Request, res: Response, next:
 
 export const resendEmailVerification = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authUser = authenticateUser(req, res, next, true) as AuthUser;
-    const result = await AuthService.resendEmailVerification(req, authUser);
+    const result = await AuthService.resendEmailVerification(req);
     res.status(StatusCodes.OK).json({
       message: 'Resend Email Success',
       data: result,
